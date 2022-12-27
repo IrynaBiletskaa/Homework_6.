@@ -34,12 +34,12 @@ def normalize(name: str) -> str:
 def create_target_folders(work_dir: Path):
     for i in dict_dir_format:
         if not work_dir.joinpath(i).exists():
-            work_dir.joinpath(i).mkdir(i)
+            work_dir.joinpath(i).mkdir()
 
 
 # видалимо пусті папки
 def remove_empty(work_dir: Path):
-    create_target_folders()
+    create_target_folders(work_dir)
     for item in work_dir.glob("**/*"):
         if item.is_file():
             sort_files(item, work_dir)
@@ -74,8 +74,10 @@ def sort_files(file: Path, work_dir: Path):
     elif file.suffix in dict_dir_format["archives"]:
         file.replace(work_dir.joinpath(
             "archives", f"{normalize(file.stem)}{file.suffix}"))
-        shutil.unpack_archive(file, rf"{work_dir}\\archives")
-        os.remove(file)
+        try:
+            shutil.unpack_archive(file, work_dir.joinpath("archives"))
+        except shutil.ReadError as err:
+            print(err)
 
     else:
         file.replace(work_dir.joinpath(
@@ -86,7 +88,7 @@ def sort_files(file: Path, work_dir: Path):
 def main():
 
     try:
-        work_dir = sys.argv[1]
+        work_dir = Path(sys.argv[1])
     except IndexError:
         print("No parameter entered.")
 
@@ -97,5 +99,6 @@ def main():
     for i in list_result:
         print(i, "- sorted")
 
-    if __name__ == "__main__":
-        main()
+
+if __name__ == "__main__":
+    main()
